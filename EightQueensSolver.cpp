@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <limits>
 
-using namespace std; // Используем пространство имен std
+using namespace std;
 
 const int N = 8;
 int Board[N][N];
