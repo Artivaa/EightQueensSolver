@@ -1,9 +1,12 @@
 ﻿#include <iostream>
+#include <limits>
+
+using namespace std; // Используем пространство имен std
 
 const int N = 8;
 int Board[N][N];
 
-// Функция для инициализации шахматной доски
+// Инициализация доски
 void InitializeBoard()
 {
     for (int Row = 0; Row < N; ++Row)
@@ -15,68 +18,57 @@ void InitializeBoard()
     }
 }
 
-// Функция для вывода текущего состояния доски
+// Вывод доски
 void PrintBoard()
 {
     for (int Row = 0; Row < N; ++Row)
     {
         for (int Col = 0; Col < N; ++Col)
         {
-            std::cout << (Board[Row][Col] ? "Q " : ". ");
+            cout << (Board[Row][Col] ? "Q " : ". ");
         }
-        std::cout << std::endl;
+        cout << endl;
     }
-    std::cout << std::endl;
+    cout << endl;
 }
 
-// Функция для проверки, можно ли поставить ферзя на позицию (Row, Col)
+// Проверка безопасности позиции (Row, Col)
 bool IsSafe(int Row, int Col)
 {
     for (int i = 0; i < Row; ++i)
     {
-        // Проверка столбца
         if (Board[i][Col])
         {
-            return false;
+            return false; // Проверка столбца
         }
-
-        // Проверка диагонали (\)
         if (Col - (Row - i) >= 0 && Board[i][Col - (Row - i)])
         {
-            return false;
+            return false; // Проверка диагонали (\)
         }
-
-        // Проверка диагонали (/)
         if (Col + (Row - i) < N && Board[i][Col + (Row - i)])
         {
-            return false;
+            return false; // Проверка диагонали (/)
         }
     }
     return true;
 }
 
-// Массив, задающий порядок обхода столбцов, чтобы прийти к нужной расстановке
-int ColOrder[N] = { 4, 2, 0, 6, 1, 7, 5, 3 };
-
-// Функция для решения задачи о 8 ферзях
+// Решение задачи о N ферзях с начальным положением
 bool SolveNQueens(int Row)
 {
     if (Row == N)
     {
-        // Решение найдено; выводим доску
-        std::cout << "Решение найдено:" << std::endl;
+        cout << "Решение найдено:" << endl;
         PrintBoard();
         return true;
     }
 
-    // Перебираем столбцы в заданном порядке
-    for (int k = 0; k < N; ++k)
+    for (int Col = 0; Col < N; ++Col)
     {
-        int Col = ColOrder[k];
         if (IsSafe(Row, Col))
         {
             Board[Row][Col] = 1;
-            std::cout << "Размещаем ферзя на позиции (" << Row << ", " << Col << "):" << std::endl;
+            cout << "Размещаем ферзя на позиции (" << Row << ", " << Col << "):" << endl;
             PrintBoard();
 
             if (SolveNQueens(Row + 1))
@@ -84,9 +76,8 @@ bool SolveNQueens(int Row)
                 return true;
             }
 
-            // Если установка ферзя не привела к решению, откатываемся
-            Board[Row][Col] = 0;
-            std::cout << "Убираем ферзя с позиции (" << Row << ", " << Col << "):" << std::endl;
+            Board[Row][Col] = 0; // Откат
+            cout << "Убираем ферзя с позиции (" << Row << ", " << Col << "):" << endl;
             PrintBoard();
         }
     }
@@ -97,9 +88,34 @@ int main()
 {
     setlocale(LC_ALL, "Rus");
     InitializeBoard();
-    if (!SolveNQueens(0))
+
+    int initialCol;
+    cout << "Введите столбец (0-" << N - 1 << ") для первого ферзя: ";
+    cin >> initialCol;
+
+    if (cin.fail() || initialCol < 0 || initialCol >= N)
     {
-        std::cout << "Решение не найдено." << std::endl;
+        cout << "Неверный ввод." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return 1;
     }
+
+    if (IsSafe(0, initialCol))
+    {
+        Board[0][initialCol] = 1;
+        cout << "Начальное положение ферзя на позиции (0, " << initialCol << "):" << endl;
+        PrintBoard();
+
+        if (!SolveNQueens(1))
+        {
+            cout << "Решение не найдено." << endl;
+        }
+    }
+    else
+    {
+        cout << "Начальное положение небезопасно (невозможно в первой строке)." << endl;
+    }
+
     return 0;
 }
