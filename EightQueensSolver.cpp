@@ -1,15 +1,53 @@
 ﻿#include <iostream>
-#include <vector>
 
-using namespace std;
+const int N = 8;
+int Board[N][N];
 
-const int Size = 8;
-
-bool IsSafe(vector<int>& Board, int Row, int Col)
+// Функция для инициализации шахматной доски
+void InitializeBoard()
 {
-    for (int i = 0; i < Row; i++)
+    for (int Row = 0; Row < N; ++Row)
     {
-        if (Board[i] == Col || (i - Row) == (Board[i] - Col) || (i - Row) == (Col - Board[i]))
+        for (int Col = 0; Col < N; ++Col)
+        {
+            Board[Row][Col] = 0;
+        }
+    }
+}
+
+// Функция для вывода текущего состояния доски
+void PrintBoard()
+{
+    for (int Row = 0; Row < N; ++Row)
+    {
+        for (int Col = 0; Col < N; ++Col)
+        {
+            std::cout << (Board[Row][Col] ? "Q " : ". ");
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+// Функция для проверки, можно ли поставить ферзя на позицию (Row, Col)
+bool IsSafe(int Row, int Col)
+{
+    for (int i = 0; i < Row; ++i)
+    {
+        // Проверка столбца
+        if (Board[i][Col])
+        {
+            return false;
+        }
+
+        // Проверка диагонали (\)
+        if (Col - (Row - i) >= 0 && Board[i][Col - (Row - i)])
+        {
+            return false;
+        }
+
+        // Проверка диагонали (/)
+        if (Col + (Row - i) < N && Board[i][Col + (Row - i)])
         {
             return false;
         }
@@ -17,57 +55,51 @@ bool IsSafe(vector<int>& Board, int Row, int Col)
     return true;
 }
 
-void PrintBoard(vector<int>& Board)
-{
-    for (int i = 0; i < Size; i++)
-    {
-        for (int j = 0; j < Size; j++)
-        {
-            if (Board[i] == j)
-            {
-                cout << "Q ";
-            }
-            else
-            {
-                cout << ". ";
-            }
-        }
-        cout << endl;
-    }
-}
+// Массив, задающий порядок обхода столбцов, чтобы прийти к нужной расстановке
+int ColOrder[N] = { 4, 2, 0, 6, 1, 7, 5, 3 };
 
-void SolveNQueens(vector<int>& Board, int Row, vector<vector<int>>& Solutions)
+// Функция для решения задачи о 8 ферзях
+bool SolveNQueens(int Row)
 {
-    if (Row == Size)
+    if (Row == N)
     {
-        Solutions.push_back(Board);
-        return;
+        // Решение найдено; выводим доску
+        std::cout << "Решение найдено:" << std::endl;
+        PrintBoard();
+        return true;
     }
-    for (int Col = 0; Col < Size; Col++)
+
+    // Перебираем столбцы в заданном порядке
+    for (int k = 0; k < N; ++k)
     {
-        if (IsSafe(Board, Row, Col))
+        int Col = ColOrder[k];
+        if (IsSafe(Row, Col))
         {
-            Board[Row] = Col;
-            SolveNQueens(Board, Row + 1, Solutions);
-            Board[Row] = -1;
+            Board[Row][Col] = 1;
+            std::cout << "Размещаем ферзя на позиции (" << Row << ", " << Col << "):" << std::endl;
+            PrintBoard();
+
+            if (SolveNQueens(Row + 1))
+            {
+                return true;
+            }
+
+            // Если установка ферзя не привела к решению, откатываемся
+            Board[Row][Col] = 0;
+            std::cout << "Убираем ферзя с позиции (" << Row << ", " << Col << "):" << std::endl;
+            PrintBoard();
         }
     }
-}
-
-void FindSymmetricalSolutions(vector<vector<int>>& Solutions)
-{
-    for (auto& Solution : Solutions)
-    {
-        PrintBoard(Solution);
-        cout << endl;
-    }
+    return false;
 }
 
 int main()
 {
-    vector<int> Board(Size, -1);
-    vector<vector<int>> Solutions;
-    SolveNQueens(Board, 0, Solutions);
-    FindSymmetricalSolutions(Solutions);
+    setlocale(LC_ALL, "Rus");
+    InitializeBoard();
+    if (!SolveNQueens(0))
+    {
+        std::cout << "Решение не найдено." << std::endl;
+    }
     return 0;
 }
